@@ -128,7 +128,7 @@ class TextureBase {
 
 	//! Returns whether a Surface of \a width, \a rowBytes and \a surfaceChannelOrder would require an intermediate Surface in order to be copied into a GL Texture.
 	template<typename T>
-	static bool		surfaceRequiresIntermediate( int32_t width, uint8_t pixelBytes, int32_t rowBytes, SurfaceChannelOrder surfaceChannelOrder );
+	static bool		surfaceRequiresIntermediate( int32_t width, uint8_t pixelBytes, ptrdiff_t rowBytes, SurfaceChannelOrder surfaceChannelOrder );
 	//! Converts a SurfaceChannelOrder into an appropriate OpenGL dataFormat and type
 	template<typename T>
 	static void		SurfaceChannelOrderToDataFormatAndType( const SurfaceChannelOrder &sco, GLint *dataFormat, GLenum *type );
@@ -623,9 +623,9 @@ class Texture2d : public TextureBase {
 	void	initData( const void *data, GLenum dataFormat, const Format &format );
 	void	initData( const ImageSourceRef &imageSource, const Format &format );
 #if ! defined( CINDER_GL_ES )
-	void	initDataImageSourceWithPboImpl( const ImageSourceRef &imageSource, const Format &format, GLint dataFormat, ImageIo::ChannelOrder channelOrder, bool isGray, const PboRef &pbo );
+	void	initDataImageSourceWithPboImpl( const ImageSourceRef &imageSource, const Format &format, GLint dataFormat, GLint dataType, ImageIo::ChannelOrder channelOrder, bool isGray, const PboRef &pbo );
 #endif
-	void	initDataImageSourceImpl( const ImageSourceRef &imageSource, const Format &format, GLint dataFormat, ImageIo::ChannelOrder channelOrder, bool isGray );
+	void	initDataImageSourceImpl( const ImageSourceRef &imageSource, const Format &format, GLint dataFormat, GLint dataType, ImageIo::ChannelOrder channelOrder, bool isGray );
 
 	ivec2		mActualSize; // true texture size in pixels, as opposed to clean bounds
 	Area		mCleanBounds; // relative to upper-left origin regardless of top-down
@@ -796,7 +796,7 @@ class Texture2dCache : public std::enable_shared_from_this<Texture2dCache>
 class SurfaceConstraintsGLTexture : public SurfaceConstraints {
   public:
 	virtual SurfaceChannelOrder getChannelOrder( bool alpha ) const { return ( alpha ) ? SurfaceChannelOrder::BGRA : SurfaceChannelOrder::BGR; }
-	virtual int32_t				getRowBytes( int requestedWidth, const SurfaceChannelOrder &sco, int elementSize ) const { return requestedWidth * elementSize * sco.getPixelInc(); }
+	virtual ptrdiff_t			getRowBytes( int32_t requestedWidth, const SurfaceChannelOrder &sco, int elementSize ) const { return requestedWidth * elementSize * sco.getPixelInc(); }
 };
 
 class KtxParseExc : public Exception {

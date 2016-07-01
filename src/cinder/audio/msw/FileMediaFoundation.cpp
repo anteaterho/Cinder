@@ -21,6 +21,9 @@
  POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "cinder/Cinder.h"
+#if ( _WIN32_WINNT >= _WIN32_WINNT_VISTA )
+
 #include "cinder/audio/msw/FileMediaFoundation.h"
 #include "cinder/audio/dsp/Converter.h"
 #include "cinder/audio/Exception.h"
@@ -468,9 +471,9 @@ TargetFileMediaFoundation::TargetFileMediaFoundation( const DataTargetRef &dataT
 
 TargetFileMediaFoundation::~TargetFileMediaFoundation()
 {
-	if( mSinkWriter ) {
+	if( mSinkWriter && mSamplesWritten ) {
 		HRESULT hr = mSinkWriter->Finalize();
-		CI_ASSERT( hr == S_OK );
+		CI_VERIFY( hr == S_OK );
 	}
 }
 
@@ -542,6 +545,8 @@ void TargetFileMediaFoundation::performWrite( const Buffer *buffer, size_t numFr
 
 	hr = mSinkWriter->WriteSample( mStreamIndex, mediaSample );
 	CI_ASSERT( hr == S_OK );
+
+	mSamplesWritten = true;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -569,3 +574,5 @@ void MediaFoundationInitializer::shutdownMediaFoundation()
 }
 
 } } } // namespace cinder::audio::msw
+
+#endif // ( _WIN32_WINNT >= 0x0600 )

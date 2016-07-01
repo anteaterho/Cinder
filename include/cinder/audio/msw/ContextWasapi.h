@@ -24,9 +24,8 @@
 #pragma once
 
 #include "cinder/Cinder.h"
-#if ! defined( CINDER_WINRT ) && ( _WIN32_WINNT < 0x0600 )
-	#error "WASAPI only available on Windows Vista or newer"
-#endif
+
+#if defined( CINDER_WINRT ) || ( _WIN32_WINNT >= 0x0600 ) // requires Windows Vista+
 
 #include "cinder/audio/Context.h"
 
@@ -75,8 +74,10 @@ private:
 
 class ContextWasapi : public Context {
   public:
-	OutputDeviceNodeRef	createOutputDeviceNode( const DeviceRef &device, const Node::Format &format = Node::Format() ) override;
-	InputDeviceNodeRef	createInputDeviceNode( const DeviceRef &device, const Node::Format &format = Node::Format()  ) override;
+	OutputDeviceNodeRef	createOutputDeviceNode( const DeviceRef &device, const Node::Format &format = Node::Format() )	override;
+	InputDeviceNodeRef	createInputDeviceNode( const DeviceRef &device, const Node::Format &format = Node::Format() )	override;
 };
 
 } } } // namespace cinder::audio::msw
+
+#endif // defined( CINDER_WINRT ) || ( _WIN32_WINNT >= 0x0600 )

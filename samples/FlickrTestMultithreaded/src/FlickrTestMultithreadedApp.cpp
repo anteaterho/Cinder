@@ -58,7 +58,7 @@ void FlickrTestMTApp::loadImagesThreadFn( gl::ContextRef context )
 	vector<Url>	urls;
 
 	// parse the image URLS from the XML feed and push them into 'urls'
-	const Url sunFlickrGroup = Url( "http://api.flickr.com/services/feeds/groups_pool.gne?id=52242317293@N01&format=rss_200" );
+	const Url sunFlickrGroup = Url( "https://api.flickr.com/services/feeds/groups_pool.gne?id=52242317293@N01&format=rss_200" );
 	const XmlTree xml( loadUrl( sunFlickrGroup ) );
 	for( auto item = xml.begin( "rss/channel/item" ); item != xml.end(); ++item ) {
 		const XmlTree &urlXml = ( ( *item / "media:content" ) );
@@ -68,11 +68,14 @@ void FlickrTestMTApp::loadImagesThreadFn( gl::ContextRef context )
 	// load images as Textures into our ConcurrentCircularBuffer
 	while( ( ! mShouldQuit ) && ( ! urls.empty() ) ) {
 		try {
+			auto urlSource = loadUrl( urls.back() );
+			auto imageSource = loadImage( urlSource );
+			auto tex = gl::Texture::create( imageSource );
+			
 			// we need to wait on a fence before alerting the primary thread that the Texture is ready
 			auto fence = gl::Sync::create();
-			auto tex = gl::Texture::create( loadImage( loadUrl( urls.back() ) ) );
-			// wait on the fence
 			fence->clientWaitSync();
+			
 			mImages->pushFront( tex );
 			urls.pop_back();
 		}
